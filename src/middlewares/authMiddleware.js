@@ -3,8 +3,8 @@ import { jwtService } from '../services/jwt.service.js';
 
 export const authMiddleware = (req, res, next) => {
   const authorization = req.header('authorization') || '';
-  const [, token] = authorization.split(' ');
-  const userData = jwtService.verify(token);
+  const token = authorization ? authorization.split(' ')[1] : null;
+  const userData = token ? jwtService.verify(token) : null;
 
   const errors = {
     authorization: !authorization

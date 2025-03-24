@@ -15,10 +15,12 @@ const getOne = async (req, res) => {
   const { userId } = req.params;
   const user = await userService.getOne(userId);
 
+  if (!user) {
+    throw ApiError.notFound({ errors: { user: 'user not found' } });
+  }
+
   const errors = {
-    user:
-      (user.activationToken ? 'user is not activated' : undefined) ||
-      (!user ? 'user not found' : undefined),
+    user: user.activationToken ? 'user is not activated' : undefined,
   };
 
   if (errors.user) {
@@ -32,6 +34,10 @@ const update = async (req, res) => {
   const { userId } = req.params;
   const { name, password, newPwd, confirmNewPwd, email } = req.body;
   const user = await userService.getOne(userId);
+
+  if (!user) {
+    throw ApiError.notFound({ errors: { user: 'user not found' } });
+  }
 
   if (email || (newPwd && confirmNewPwd)) {
     const isPwdCorrect = await bcrypt.compare(password, user.password);

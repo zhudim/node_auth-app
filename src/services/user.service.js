@@ -47,6 +47,10 @@ async function reqPwdReset(email) {
   const pwdResetToken = uuidv4();
   const user = await findByEmail(email);
 
+  if (!user) {
+    throw ApiError.notFound({ errors: { email: 'User not found' } });
+  }
+
   user.pwdResetToken = pwdResetToken;
   await user.save();
 
@@ -60,6 +64,10 @@ async function update(
   email = undefined,
 ) {
   const user = await User.findOne({ where: { id } });
+
+  if (!user) {
+    throw ApiError.notFound({ errors: { user: 'User not found' } });
+  }
 
   if (name) {
     user.name = name;
@@ -75,7 +83,7 @@ async function update(
     user.email = email;
   }
 
-  user.save();
+  await user.save();
 }
 
 export const userService = {

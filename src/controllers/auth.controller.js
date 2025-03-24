@@ -29,16 +29,12 @@ const activate = async (req, res) => {
   const { activationToken } = req.params;
   const user = await User.findOne({ where: { activationToken } });
 
-  const errors = {
-    token: !user ? 'invalid token' : undefined,
-  };
-
-  if (errors.token) {
-    throw ApiError.notFound({ errors });
+  if (!user) {
+    throw ApiError.notFound({ errors: { token: 'invalid token' } });
   }
 
   user.activationToken = null;
-  user.save();
+  await user.save();
 
   res.send(userService.normalize(user));
 };
@@ -144,12 +140,10 @@ const validatePwResetToken = async (req, res) => {
   const user = await User.findOne({ where: { pwdResetToken } });
 
   const errors = {
-    token:
-      (!user ? 'invalid token' : undefined) ||
-      (!pwdResetToken ? 'token required' : undefined),
+    token: !user ? 'invalid token' : undefined,
   };
 
-  if (errors.pwdResetToken) {
+  if (errors.token) {
     throw ApiError.badRequest('Bad request', errors);
   }
 
@@ -175,7 +169,7 @@ const pwdReset = async (req, res) => {
 
   user.password = hashedPass;
   user.pwdResetToken = null;
-  user.save();
+  await user.save();
 
   res.sendStatus(204);
 };
